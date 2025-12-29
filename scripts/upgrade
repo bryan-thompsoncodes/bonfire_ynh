@@ -51,8 +51,15 @@ fi
 # Ensure directories exist
 mkdir -p "$data_dir/uploads"
 mkdir -p "$data_dir/meilisearch"
-# VERSION file must not have the "v" prefix - Meilisearch expects "1.14.0" not "v1.14.0"
-echo "${meili_version#v}" > "$data_dir/meilisearch/VERSION"
+mkdir -p "/var/log/$app"
+chown -R $app:$app "/var/log/$app"
+
+# Update VERSION file only if we upgraded Meilisearch
+if [ -n "$meili_version" ]; then
+    # VERSION file must not have the "v" prefix - Meilisearch expects "1.14.0" not "v1.14.0"
+    echo "${meili_version#v}" > "$data_dir/meilisearch/VERSION"
+fi
+
 chown -R $app:www-data "$install_dir"
 chown -R $app:www-data "$data_dir"
 
@@ -110,7 +117,9 @@ ynh_script_progression --message="Starting systemd services..." --weight=1
 # Start Meilisearch first
 ynh_systemd_action --service_name="meilisearch-$app" --action="start" --log_path="/var/log/$app/meilisearch.log"
 
-# Start Bonfire (migrations run automatically on startup)
+# Note: Bonfire runs migrations automatically on startup via EctoSparkles.AutoMigrator
+
+# Start Bonfire (migrations run automatically during startup)
 ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/$app.log" --line_match="Running Bonfire.Web.Endpoint" --timeout=300
 
 #=================================================
