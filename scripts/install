@@ -104,7 +104,8 @@ chmod +x "$install_dir/meilisearch"
 # Create meilisearch data directory
 mkdir -p "$data_dir/meilisearch"
 mkdir -p "$data_dir/meilisearch/dumps"
-echo $meili_version > "$data_dir/meilisearch/VERSION"
+# VERSION file must not have the "v" prefix - Meilisearch expects "1.14.0" not "v1.14.0"
+echo "${meili_version#v}" > "$data_dir/meilisearch/VERSION"
 chown -R $app:$app "$data_dir/meilisearch"
 chmod 750 "$data_dir/meilisearch"
 
